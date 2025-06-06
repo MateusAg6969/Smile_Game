@@ -15,24 +15,19 @@ let cartaVencedoraId = null; // Adicione esta variável global
 const btnProximaTentativa = document.getElementById('proxima-tentativa');
 const btnReiniciarJogo = document.getElementById('reiniciar-jogo');
 const placar = document.getElementById("resposta");
-const cards = document.querySelectorAll('.card-item');
 const effectContainer = document.getElementById('effect-container');
 
 // Inicializa o jogo
 function init() {
-    // Adiciona event listeners
+    // Seleciona os cards após eles existirem no DOM
+    const cards = document.querySelectorAll('.card-item');
     cards.forEach(card => {
         card.addEventListener('click', () => verificarEscolha(card));
-        card.innerHTML = card.id;
     });
-    
     btnProximaTentativa.addEventListener('click', prepararNovaTentativa);
     btnReiniciarJogo.addEventListener('click', iniciarNovoJogo);
-    
-    prepararNovaTentativa(); // Sorteia a primeira carta vencedora
 
-    // Atualiza o placar inicial
-    atualizarPlacar();
+    iniciarNovoJogo(); // Inicializa o jogo completamente
 }
 
 // Exibe o resultado (ASCII) no card
@@ -68,20 +63,13 @@ function dispararConfetes() {
 // Verifica a escolha do jogador
 function verificarEscolha(cardSelecionado) {
     if (!jogar) return;
-    
+
     jogar = false;
     tentativas++;
-    
-    // Verifica se o jogo terminou
-    if (tentativas >= MAX_ATTEMPTS) {
-        btnProximaTentativa.classList.add('invisivel');
-        btnReiniciarJogo.classList.remove('invisivel');
-    }
-    
+
     // NÃO sorteie aqui! Use a cartaVencedoraId já sorteada
     const cartaVencedora = document.getElementById(cartaVencedoraId);
-    
-    // Verifica se acertou
+
     if (cardSelecionado.id === cartaVencedoraId) {
         cardSelecionado.className = "acertou card-item";
         mostrarResultadoNoCard(cardSelecionado, true);
@@ -92,7 +80,7 @@ function verificarEscolha(cardSelecionado) {
         cartaVencedora.className = "acertou card-item";
         mostrarResultadoNoCard(cartaVencedora, true);
     }
-    
+
     atualizarPlacar();
 
     if (tentativas >= MAX_ATTEMPTS) {
@@ -102,15 +90,21 @@ function verificarEscolha(cardSelecionado) {
             dispararConfetes();
         }
     }
+
+    gerenciarVisibilidadeBotoes();
 }
 
 // Prepara uma nova tentativa
 function prepararNovaTentativa() {
     jogar = true;
-    // Sorteia a carta vencedora para a nova rodada
     cartaVencedoraId = Math.floor(Math.random() * NUM_CARDS).toString();
-    // Reseta todas as cartas
-    cards.forEach(card => {
+    resetarCards();
+}
+
+// Centraliza a reinicialização dos cards
+function resetarCards() {
+    // Seleciona os cards dinamicamente sempre que precisar
+    document.querySelectorAll('.card-item').forEach(card => {
         card.className = "inicial card-item";
         card.innerHTML = card.id;
     });
@@ -124,9 +118,19 @@ function iniciarNovoJogo() {
     tentativas = 0;
     acertos = 0;
     prepararNovaTentativa();
-    btnProximaTentativa.classList.remove('invisivel');
-    btnReiniciarJogo.classList.add('invisivel');
     atualizarPlacar();
+    gerenciarVisibilidadeBotoes();
+}
+
+// Gerencia a visibilidade dos botões
+function gerenciarVisibilidadeBotoes() {
+    if (tentativas >= MAX_ATTEMPTS) {
+        btnProximaTentativa.classList.add('invisivel');
+        btnReiniciarJogo.classList.remove('invisivel');
+    } else {
+        btnProximaTentativa.classList.remove('invisivel');
+        btnReiniciarJogo.classList.add('invisivel');
+    }
 }
 
 // Atualiza o placar
